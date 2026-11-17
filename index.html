@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="iMENA Design - Professional Posters, Certificates & Payment Designs. Part of the iMENA Hub Ecosystem." />
+  <title>iMENA Design | Premium Creative Studio</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ══════════════════════════════════════════════════════════════
+       1. CSS VARIABLES & RESET (Premium Deep Navy Theme)
+       ══════════════════════════════════════════════════════════════ */
+    :root {
+      --rw-blue: #00A1DE;
+      --rw-yellow: #FAD201;
+      --rw-green: #20603D;
+      
+      --bg-dark: #060b14;
+      --bg-surface: #0d1526;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-heading: 'Playfair Display', serif;
+      
+      --container-width: 1200px;
+      --nav-height: 80px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       2. 3D CANVAS BACKGROUND
+       ══════════════════════════════════════════════════════════════ */
+    #webgl-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none; /* Allows scrolling and clicking through */
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       3. LAYOUT & TYPOGRAPHY
+       ══════════════════════════════════════════════════════════════ */
+    h1, h2, h3, h4 {
+      font-family: var(--font-heading);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    
+    a { color: inherit; text-decoration: none; transition: color 0.3s ease; }
+    
+    .container {
+      width: 90%;
+      max-width: var(--container-width);
+      margin: 0 auto;
+      position: relative;
+      z-index: 10; /* Above the canvas */
+    }
+
+    .section-title {
+      font-size: 2.5rem;
+      color: var(--text-main);
+      margin-bottom: 0.5rem;
+    }
+    
+    .section-subtitle {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--rw-blue);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      display: block;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 32px;
+      border-radius: 4px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      font-size: 0.95rem;
+    }
+    .btn-primary { background: var(--rw-blue); color: #fff; }
+    .btn-primary:hover { background: #0088bc; transform: translateY(-2px); }
+    .btn-outline {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+    }
+    .btn-outline:hover { border-color: var(--rw-blue); color: var(--rw-blue); }
+
+    /* ══════════════════════════════════════════════════════════════
+       4. NAVIGATION
+       ══════════════════════════════════════════════════════════════ */
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      height: var(--nav-height);
+      background: rgba(6, 11, 20, 0.9);
+      border-bottom: 1px solid var(--border-subtle);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+    }
+    .nav-inner {
+      width: 90%;
+      max-width: var(--container-width);
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-family: var(--font-heading);
+      font-size: 1.6rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo span { color: var(--rw-blue); font-style: italic; }
+
+    .nav-links { display: none; }
+    .nav-links a { margin-left: 2.5rem; font-weight: 500; font-size: 0.9rem; color: var(--text-muted); }
+    .nav-links a:hover { color: var(--text-main); }
+
+    .hamburger {
+      display: block;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: var(--text-main);
+      font-size: 1.5rem;
+    }
+
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: var(--nav-height);
+      left: 0;
+      width: 100%;
+      background: var(--bg-dark);
+      padding: 2rem;
+      flex-direction: column;
+      gap: 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      z-index: 999;
+    }
+    .mobile-menu.active { display: flex; }
+    .mobile-menu a { font-size: 1.1rem; font-weight: 500; color: var(--text-main); }
+
+    /* ══════════════════════════════════════════════════════════════
+       5. SECTIONS (Split Layout for Desktop)
+       ══════════════════════════════════════════════════════════════ */
+    .section-layout {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: var(--nav-height);
+    }
+
+    /* Desktop layout: Left side text, right side 3D ball */
+    .content-half {
+      width: 100%;
+      padding: 4rem 0;
+    }
+
+    /* Hero */
+    .hero-content { max-width: 600px; }
+    .hero-content h1 {
+      font-size: 3.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .hero-content p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+      max-width: 500px;
+    }
+    .hero-buttons { display: flex; gap: 1rem; }
+
+    /* Services */
+    .services-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .service-item {
+      border-left: 2px solid var(--rw-blue);
+      padding-left: 1.5rem;
+      transition: transform 0.3s ease;
+    }
+    .service-item:hover { transform: translateX(10px); }
+    .service-item h3 { font-family: var(--font-body); font-size: 1.2rem; margin-bottom: 0.5rem; font-weight: 600; }
+    .service-item p { color: var(--text-muted); font-size: 0.95rem; max-width: 450px; }
+
+    /* Portfolio */
+    .portfolio-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .portfolio-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 1.5rem;
+      max-width: 500px;
+    }
+    .portfolio-card h3 { font-family: var(--font-body); font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .portfolio-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
+
+    /* Founder */
+    .founder-content {
+      max-width: 500px;
+    }
+    .founder-content h3 { font-size: 2rem; color: var(--rw-blue); margin-bottom: 0.5rem; }
+    .founder-role { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--rw-yellow); margin-bottom: 1.5rem; display: block; }
+    .founder-bio { color: var(--text-muted); font-size: 1rem; margin-bottom: 2rem; }
+
+    /* Contact */
+    .contact-form-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      padding: 2.5rem;
+      border-radius: 8px;
+      max-width: 500px;
+    }
+    .contact-form { display: flex; flex-direction: column; gap: 1.2rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .form-group label { font-size: 0.85rem; color: var(--text-muted); }
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(0, 0, 0, 0.2);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+    }
+    .form-control:focus { outline: none; border-color: var(--rw-blue); }
+    textarea.form-control { min-height: 100px; resize: vertical; }
+
+    /* ══════════════════════════════════════════════════════════════
+       6. FOOTER
+       ══════════════════════════════════════════════════════════════ */
+    footer {
+      background: #03060a;
+      border-top: 1px solid var(--border-subtle);
+      padding: 4rem 0 2rem;
+      position: relative;
+      z-index: 10;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3rem;
+      margin-bottom: 3rem;
+    }
+    .footer-col h4 { font-family: var(--font-body); font-size: 1rem; font-weight: 600; margin-bottom: 1.5rem; }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 0.8rem; }
+    .footer-col ul li a { color: var(--text-muted); font-size: 0.9rem; }
+    .footer-col ul li a:hover { color: var(--rw-blue); }
+    
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .footer-bottom .dev-link { color: var(--rw-blue); font-weight: 600; }
+
+    /* ══════════════════════════════════════════════════════════════
+       7. MEDIA QUERIES
+       ══════════════════════════════════════════════════════════════ */
+    @media (min-width: 992px) {
+      .nav-links { display: flex; align-items: center; }
+      .hamburger { display: none; }
+      
+      /* Desktop Split Layout */
+      .section-layout .container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: center;
+      }
+      .content-half { padding: 0; }
+      
+      .footer-grid { grid-template-columns: 2fr 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="webgl-canvas"></canvas>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="logo">iMENA <span>Design</span></a>
+      <div class="nav-links">
+        <a href="#home">Home</a>
+        <a href="#services">Services</a>
+        <a href="#portfolio">Portfolio</a>
+        <a href="#founder">Founder</a>
+        <a href="#contact" class="btn btn-primary" style="padding: 10px 24px; margin-left: 2rem;">Start a Project</a>
+      </div>
+      <button class="hamburger" id="hamburger">☰</button>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#home">Home</a>
+    <a href="#services">Services</a>
+    <a href="#portfolio">Portfolio</a>
+    <a href="#founder">Founder</a>
+    <a href="#contact">Start a Project</a>
+  </div>
+
+  <main>
+    <!-- HERO -->
+    <section id="home" class="section-layout">
+      <div class="container">
+        <div class="content-half hero-content">
+          <h1>Elevating Brands Through Premium Design.</h1>
+          <p>From custom payment solutions to verifiable certificates, iMENA Design crafts clean, modern, and impactful visuals for forward-thinking businesses.</p>
+          <div class="hero-buttons">
+            <a href="#portfolio" class="btn btn-primary">Explore Portfolio</a>
+            <a href="#contact" class="btn btn-outline">Get a Quote</a>
+          </div>
+        </div>
+        <div class="content-half"></div> <!-- Empty for 3D space -->
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="services" class="section-layout">
+      <div class="container">
+        <div class="content-half">
+          <span class="section-subtitle">What We Do</span>
+          <h2 class="section-title">Precision in every pixel.</h2>
+          <div class="services-list">
+            <div class="service-item">
+              <h3>Payment Posters</h3>
+              <p>Customized MoMo and Airtel Money posters with integrated QR codes that trigger USSD dialers for seamless transactions.</p>
+            </div>
+            <div class="service-item">
+              <h3>Verifiable Certificates</h3>
+              <p>Elegant certificates for institutions, embedded with unique IDs and QR codes for instant online verification.</p>
+            </div>
+            <div class="service-item">
+              <h3>Brand Identity</h3>
+              <p>Logos, business cards, and comprehensive social media kits that make your business instantly recognizable.</p>
+            </div>
+          </div>
+        </div>
+        <div class="content-half"></div>
+      </div>
+    </section>
+
+    <!-- PORTFOLIO -->
+    <section id="portfolio" class="section-layout">
+      <div class="container">
+        <div class="content-half">
+          <span class="section-subtitle">Selected Works</span>
+          <h2 class="section-title">Our Portfolio</h2>
+          <div class="portfolio-list">
+            <div class="portfolio-card">
+              <h3>Gahunda Shop Payment Poster</h3>
+              <p>Smart QR codes that directly open the mobile money dialer for instant payments, reducing friction at checkout.</p>
+              <a href="https://i.postimg.cc/g0chS3vr/GAHUNDA-payment-poster.png" target="_blank" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.8rem;">View Image</a>
+            </div>
+            <div class="portfolio-card">
+              <h3>iMENA Learn Certificate</h3>
+              <p>Verifiable certificate template for educational programs, featuring unique identification and secure QR codes.</p>
+              <a href="https://imenalearn.vercel.app/" target="_blank" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.8rem;">View Project</a>
+            </div>
+          </div>
+        </div>
+        <div class="content-half"></div>
+      </div>
+    </section>
+
+    <!-- FOUNDER -->
+    <section id="founder" class="section-layout">
+      <div class="container">
+        <div class="content-half founder-content">
+          <span class="section-subtitle">Leadership</span>
+          <h3>TUYISENGE Jean Chrisostom</h3>
+          <span class="founder-role">Founder & Lead Designer</span>
+          <p class="founder-bio">
+            Passionate about bridging education & technology. As a final-year student teacher and self-taught developer, Chrisostom founded iMENA Hub to build tools that empower the next generation of African educators. iMENA Design is the creative arm of this ecosystem, ensuring that technology and design work hand-in-hand.
+          </p>
+          <a href="https://chrisostom.vercel.app/" target="_blank" class="btn btn-primary">View Founder Profile</a>
+        </div>
+        <div class="content-half"></div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="section-layout">
+      <div class="container">
+        <div class="content-half">
+          <span class="section-subtitle">Get in Touch</span>
+          <h2 class="section-title">Start a Project</h2>
+          <div class="contact-form-container">
+            <form action="https://formsubmit.co/imenahub.rw@gmail.com" method="POST" class="contact-form">
+              <input type="hidden" name="_subject" value="New iMENA Design Inquiry!">
+              <input type="hidden" name="_captcha" value="false">
+
+              <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" name="name" id="name" class="form-control" required placeholder="John Doe">
+              </div>
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" name="email" id="email" class="form-control" required placeholder="john@example.com">
+              </div>
+              <div class="form-group">
+                <label for="service">Service Required</label>
+                <select name="service" id="service" class="form-control" required style="background: #0d1526;">
+                  <option value="" disabled selected>Select a service...</option>
+                  <option value="Payment Poster">Payment Poster</option>
+                  <option value="Certificate">Certificate Design</option>
+                  <option value="Logo Design">Logo Design</option>
+                  <option value="Social Media Kit">Social Media Kit</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="message">Project Details</label>
+                <textarea name="message" id="message" class="form-control" placeholder="Tell us about your timeline and requirements..." required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+            </form>
+          </div>
+        </div>
+        <div class="content-half"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container" style="display: block; max-width: var(--container-width);">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>iMENA Design</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; max-width: 300px;">
+            The creative design agency of the iMENA Hub ecosystem. We build beautiful, functional, and smart visuals for modern businesses.
+          </p>
+          <a href="https://imena-hub.vercel.app/" target="_blank" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.8rem;">Visit iMENA Hub</a>
+        </div>
+        
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#portfolio">Portfolio</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Contact Info</h4>
+          <ul>
+            <li><a href="mailto:imenahub.rw@gmail.com">imenahub.rw@gmail.com</a></li>
+            <li><a href="https://wa.me/250796717230" target="_blank">+250 796 717 230</a></li>
+            <li>Bugesera, Ntarama, Rwanda</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2024 iMENA Design. All rights reserved.</p>
+        <p style="margin-top: 0.5rem;">
+          Developed by <a href="https://imena-lab.vercel.app" target="_blank" class="dev-link">iMENA Lab</a>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- THREE.JS 3D ENGINE -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+    /* ══════════════════════════════════════════════════════════════
+       1. SETUP & RESPONSIVE HANDLING
+       ══════════════════════════════════════════════════════════════ */
+    const canvas = document.querySelector('#webgl-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    
+    // Camera position (moved back slightly to fit the ball nicely)
+    camera.position.set(0, 0, 5.5);
+    camera.lookAt(0, 0, 0);
+
+    // Position ball to the right on desktop, center on mobile
+    const ballGroup = new THREE.Group();
+    scene.add(ballGroup);
+
+    function updateLayout() {
+      if (window.innerWidth >= 992) {
+        ballGroup.position.set(1.8, 0, 0); // Shift right for split screen
+      } else {
+        ballGroup.position.set(0, 0, 0);   // Center on mobile
+      }
+    }
+    updateLayout();
+
+    /* ══════════════════════════════════════════════════════════════
+       2. LIGHTING & ENVIRONMENT
+       ══════════════════════════════════════════════════════════════ */
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+    // Ambient light for base visibility
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+    // Key Light (Main illumination, creates shadows)
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    keyLight.position.set(5, 5, 5);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.width = 2048;
+    keyLight.shadow.mapSize.height = 2048;
+    scene.add(keyLight);
+
+    // Rim Light (Adds a professional edge glow)
+    const rimLight = new THREE.DirectionalLight(0x00A1DE, 1.5); // Rwanda Blue rim
+    rimLight.position.set(-5, 0, -5);
+    scene.add(rimLight);
+
+    // Fill Light (Softens shadows)
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    fillLight.position.set(-2, -3, 4);
+    scene.add(fillLight);
+
+    /* ══════════════════════════════════════════════════════════════
+       3. GEOMETRY MATH (TRUNCATED ICOSAHEDRON)
+       ══════════════════════════════════════════════════════════════ */
+    const PHI = (1 + Math.sqrt(5)) / 2;
+    const R = 1.0;
+    const SIGNS = [[1,1,1],[1,1,-1],[1,-1,1],[1,-1,-1],[-1,1,1],[-1,1,-1],[-1,-1,1],[-1,-1,-1]];
+    const evenPerms = (a, b, c) => [[a, b, c], [b, c, a], [c, a, b]];
+
+    const vertexMap = new Map();
+    function addVertex(x, y, z) {
+      const v = new THREE.Vector3(x, y, z).normalize().multiplyScalar(R);
+      vertexMap.set(`${v.x.toFixed(5)}|${v.y.toFixed(5)}|${v.z.toFixed(5)}`, v);
+    }
+    for (const base of [[0, 1, 3 * PHI], [1, 2 + PHI, 2 * PHI], [PHI, 2, 2 * PHI + 1]]) {
+      for (const p of evenPerms(...base)) for (const s of SIGNS) addVertex(p[0]*s[0], p[1]*s[1], p[2]*s[2]);
+    }
+    const VERTS = [...vertexMap.values()];
+
+    const dirMap = new Map();
+    const DIRS = [];
+    function addDir(x, y, z) {
+      const v = new THREE.Vector3(x, y, z).normalize();
+      const k = `${v.x.toFixed(4)}|${v.y.toFixed(4)}|${v.z.toFixed(4)}`;
+      if (!dirMap.has(k)) { dirMap.set(k, v); DIRS.push(v); }
+    }
+    for (const p of evenPerms(0, 1, PHI)) for (const s of SIGNS) addDir(p[0]*s[0], p[1]*s[1], p[2]*s[2]);
+    for (const p of evenPerms(0, 1/PHI, PHI)) for (const s of SIGNS) addDir(p[0]*s[0], p[1]*s[1], p[2]*s[2]);
+    for (const s of SIGNS) addDir(s[0], s[1], s[2]);
+
+    const FACES = [];
+    for (const n of DIRS) {
+      const dots = VERTS.map(v => v.dot(n));
+      const maxDot = Math.max(...dots);
+      const pts = VERTS.filter((v, i) => dots[i] > maxDot - 1e-6);
+      if (pts.length !== 5 && pts.length !== 6) continue;
+
+      const helper = Math.abs(n.x) > 0.9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
+      const u = new THREE.Vector3().crossVectors(n, helper).normalize();
+      const w = new THREE.Vector3().crossVectors(n, u).normalize();
+      const centre = new THREE.Vector3();
+      pts.forEach(p => centre.add(p));
+      centre.divideScalar(pts.length);
+      pts.sort((a, b) => Math.atan2(a.clone().sub(centre).dot(w), a.clone().sub(centre).dot(u)) - Math.atan2(b.clone().sub(centre).dot(w), b.clone().sub(centre).dot(u)));
+
+      FACES.push({ normal: n.clone(), points: pts, sides: pts.length, centre });
+    }
+
+    const pentagonFaces = FACES.filter(f => f.sides === 5);
+    const hexagonFaces = FACES.filter(f => f.sides === 6);
+
+    // Sort pentagons to map specific sections
+    pentagonFaces.sort((a,b) => {
+        if (Math.abs(a.normal.y - b.normal.y) > 0.1) return b.normal.y - a.normal.y;
+        return b.normal.z - a.normal.z;
+    });
+
+    /* ══════════════════════════════════════════════════════════════
+       4. GEOMETRY BUILDER (With realistic spacing/bevel)
+       ══════════════════════════════════════════════════════════════ */
+    const INSET = 0.06; // Width of the dark seam between panels
+    const DEPTH = 3;
+    const sphereMid = (a, b) => a.clone().add(b).normalize().multiplyScalar(R);
+    
+    function subdivideTri(a, b, c, depth, out) {
+      if (depth === 0) { out.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z); return; }
+      const ab = sphereMid(a, b), bc = sphereMid(b, c), ca = sphereMid(c, a);
+      subdivideTri(a, ab, ca, depth - 1, out); subdivideTri(ab, b, bc, depth - 1, out);
+      subdivideTri(ca, bc, c, depth - 1, out); subdivideTri(ab, bc, ca, depth - 1, out);
+    }
+
+    function buildFaceGeometry(face) {
+      const inner = face.points.map(p => p.clone().lerp(face.centre, INSET).normalize().multiplyScalar(R));
+      const arr = [];
+      for (let i = 0; i < inner.length; i++) subdivideTri(face.centre, inner[i], inner[(i + 1) % inner.length], DEPTH, arr);
+
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
+      g.computeVertexNormals();
+      
+      const pos = g.attributes.position;
+      const uvs = [];
+      const v = new THREE.Vector3();
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i).normalize();
+        uvs.push(0.5 + Math.atan2(v.z, v.x) / (2 * Math.PI), 0.5 + Math.asin(v.y) / Math.PI);
+        g.attributes.normal.setXYZ(i, v.x, v.y, v.z);
+      }
+      g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+      g.attributes.normal.needsUpdate = true;
+      return g;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       5. CANVAS TEXTURES
+       ══════════════════════════════════════════════════════════════ */
+    
+    // Generate realistic leather grain
+    function createLeatherTexture() {
+      const c = document.createElement('canvas'); c.width = c.height = 512;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 512, 512);
+      for (let i = 0; i < 15000; i++) {
+        const x = Math.random() * 512, y = Math.random() * 512;
+        const r = Math.random() * 1.5;
+        ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.1})`;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(4, 4);
+      return tex;
+    }
+    const leatherMap = createLeatherTexture();
+
+    function createSectionTexture(title, content, bgColor) {
+      const c = document.createElement('canvas'); c.width = c.height = 512;
+      const ctx = c.getContext('2d');
+      
+      // Background
+      ctx.fillStyle = bgColor; ctx.fillRect(0, 0, 512, 512);
+      
+      // Inner border
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 10;
+      ctx.beginPath(); ctx.arc(256, 256, 220, 0, Math.PI * 2); ctx.stroke();
+
+      // Text
+      ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = 'bold 50px "Inter", sans-serif'; 
+      ctx.fillText(title, 256, 220);
+      
+      ctx.font = '24px "Inter", sans-serif';
+      const words = content.split(' '); let line = ''; let y = 290;
+      for(let n = 0; n < words.length; n++) {
+        let testLine = line + words[n] + ' ';
+        if (ctx.measureText(testLine).width > 380 && n > 0) {
+          ctx.fillText(line, 256, y); line = words[n] + ' '; y += 35;
+        } else line = testLine;
+      }
+      ctx.fillText(line, 256, y);
+      
+      return new THREE.CanvasTexture(c);
+    }
+
+    function createImageTexture(url, bgColor) {
+      const c = document.createElement('canvas'); c.width = c.height = 512;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = bgColor; ctx.fillRect(0, 0, 512, 512);
+      
+      const tex = new THREE.CanvasTexture(c);
+      const img = new Image(); img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const scale = Math.min(400 / img.width, 400 / img.height);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        // White border for images
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(256 - w/2 - 10, 256 - h/2 - 10, w + 20, h + 20);
+        ctx.drawImage(img, 256 - w/2, 256 - h/2, w, h);
+        tex.needsUpdate = true;
+      };
+      img.src = url;
+      return tex;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       6. ASSEMBLE BALL
+       ══════════════════════════════════════════════════════════════ */
+    
+    // Core Sphere (Deep Dark Black/Green for realistic stitching look)
+    const coreMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.9, metalness: 0.1 });
+    const core = new THREE.Mesh(new THREE.SphereGeometry(R * 0.98, 64, 64), coreMat);
+    ballGroup.add(core);
+
+    // Hexagon Material (Premium white with subtle leather texture)
+    const hexMat = new THREE.MeshPhysicalMaterial({
+      color: 0xf8fafc,
+      roughness: 0.6,
+      metalness: 0.0,
+      clearcoat: 0.3,
+      clearcoatRoughness: 0.4,
+      bumpMap: leatherMap,
+      bumpScale: 0.02
+    });
+
+    hexagonFaces.forEach(face => {
+      const mesh = new THREE.Mesh(buildFaceGeometry(face), hexMat);
+      mesh.castShadow = true; mesh.receiveShadow = true;
+      ballGroup.add(mesh);
+    });
+
+    // Pentagon Materials (Different textures for sections)
+    const pentTextures = [
+      // 0. Home
+      createSectionTexture("iMENA DESIGN", "Premium Creative Studio", "#0d1526"),
+      // 1. Services
+      createSectionTexture("SERVICES", "Posters • Certificates • Logos", "#0d1526"),
+      // 2. Portfolio (Gahunda)
+      createImageTexture("https://i.postimg.cc/g0chS3vr/GAHUNDA-payment-poster.png", "#0d1526"),
+      // 3. Portfolio (Certificate)
+      createImageTexture("https://i.postimg.cc/fLGQ5Tb9/i-MENA-Learn-Certificate-Template.png", "#ffffff"),
+      // 4. Founder
+      createImageTexture("https://i.postimg.cc/X7mnG85n/Cut-out-image.png", "#0d1526"),
+      // 5. Contact
+      createSectionTexture("CONTACT", "imenahub.rw@gmail.com", "#0d1526"),
+    ];
+    // Fill remaining pentagons
+    while(pentTextures.length < 12) pentTextures.push(createSectionTexture("iMENA", "Design", "#0d1526"));
+
+    const pentMeshes = [];
+    pentagonFaces.forEach((face, i) => {
+      const mat = new THREE.MeshPhysicalMaterial({
+        map: pentTextures[i],
+        roughness: 0.5,
+        metalness: 0.1,
+        clearcoat: 0.4,
+        bumpMap: leatherMap,
+        bumpScale: 0.02
+      });
+      const mesh = new THREE.Mesh(buildFaceGeometry(face), mat);
+      mesh.castShadow = true; mesh.receiveShadow = true;
+      
+      // Save normal vector for rotation targeting
+      mesh.userData.normal = face.normal;
+      pentMeshes.push(mesh);
+      
+      ballGroup.add(mesh);
+    });
+
+    /* ══════════════════════════════════════════════════════════════
+       7. SCROLL SYNC LOGIC
+       ══════════════════════════════════════════════════════════════ */
+    
+    // Define target rotations based on pentagon normals
+    // We map: Home(0), Services(1), Portfolio(2), Founder(4), Contact(5)
+    const sections = ['home', 'services', 'portfolio', 'founder', 'contact'];
+    const sectionIndices = [0, 1, 2, 4, 5];
+    
+    // Calculate target quaternions
+    const targetQuaternions = sectionIndices.map(idx => {
+      const n = pentagonFaces[idx].normal;
+      // We want this normal to point towards +Z (the camera)
+      const q = new THREE.Quaternion().setFromUnitVectors(n, new THREE.Vector3(0, 0, 1));
+      return q;
+    });
+
+    let currentQuat = targetQuaternions[0].clone();
+
+    function handleScroll() {
+      const scrollY = window.scrollY;
+      const maxScroll = document.body.scrollHeight - window.innerHeight;
+      const progress = Math.max(0, Math.min(1, scrollY / maxScroll));
+      
+      // Determine which section we are in
+      const sectionHeight = maxScroll / (sections.length - 1);
+      const currentIndex = Math.min(sections.length - 1, Math.floor(scrollY / sectionHeight));
+      const nextIndex = Math.min(sections.length - 1, currentIndex + 1);
+      
+      const sectionProgress = (scrollY % sectionHeight) / sectionHeight;
+      
+      // Interpolate between the current target and next target based on scroll
+      const startQ = targetQuaternions[currentIndex];
+      const endQ = targetQuaternions[nextIndex];
+      
+      // Smooth the interpolation using easeInOutCubic
+      const t = sectionProgress < 0.5 
+        ? 4 * sectionProgress * sectionProgress * sectionProgress 
+        : 1 - Math.pow(-2 * sectionProgress + 2, 3) / 2;
+        
+      currentQuat.slerpQuaternions(startQ, endQ, t);
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial call
+
+    /* ══════════════════════════════════════════════════════════════
+       8. ANIMATION LOOP
+       ══════════════════════════════════════════════════════════════ */
+    const clock = new THREE.Clock();
+    let prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      // Smoothly interpolate the ball's actual rotation towards the scroll target
+      ballGroup.quaternion.slerp(currentQuat, 0.08);
+
+      // Gentle bobbing (Disabled if user prefers reduced motion)
+      if (!prefersReducedMotion) {
+        const time = clock.getElapsedTime();
+        ballGroup.position.y = Math.sin(time * 1.5) * 0.05;
+      }
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    /* ══════════════════════════════════════════════════════════════
+       9. RESIZE & UI HANDLERS
+       ══════════════════════════════════════════════════════════════ */
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      updateLayout();
+      handleScroll(); // Recalculate scroll targets on resize
+    });
+
+    // Mobile Menu
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => {
+      mobileMenu.classList.toggle('active');
+      hamburger.textContent = mobileMenu.classList.contains('active') ? '✕' : '☰';
+    });
+    document.querySelectorAll('.mobile-menu a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.remove('active');
+        hamburger.textContent = '☰';
+      });
+    });
+  </script>
+</body>
+</html>
